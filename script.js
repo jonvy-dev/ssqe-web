@@ -4,6 +4,7 @@ const quantumMode = document.getElementById('quantumMode');
 const bpmInput = document.getElementById('bpm');
 const offsetInput = document.getElementById('offset');
 const audioIDInput = document.getElementById('audioID');
+const timeline = document.getElementById('timeline');
 
 const notes = [];
 let currentTime = 0; // TODO: link with playback timeline
@@ -24,6 +25,27 @@ for (let i = 0; i < 9; i++) {
   cell.classList.add('cell');
   grid.appendChild(cell);
 }
+
+function generateTimeline() {
+  timeline.innerHTML = '';
+  const bpm = parseFloat(bpmInput.value);
+  const offset = parseFloat(offsetInput.value);
+  if (isNaN(bpm) || isNaN(offset)) return;
+
+  const beatInterval = 60000 / bpm; // ms per beat
+  const totalBeats = 100; // arbitrary for prototype
+
+  for (let i = 0; i < totalBeats; i++) {
+    const beatMarker = document.createElement('div');
+    beatMarker.classList.add('beat-marker');
+    beatMarker.style.left = `${(i * beatInterval) / 10}px`;
+    if (i % 4 === 0) beatMarker.classList.add('measure');
+    timeline.appendChild(beatMarker);
+  }
+}
+
+bpmInput.addEventListener('input', generateTimeline);
+offsetInput.addEventListener('input', generateTimeline);
 
 grid.addEventListener('click', (e) => {
   if (quantumMode.checked) {
@@ -106,4 +128,7 @@ function exportMap() {
 
 function copyMap() {
   navigator.clipboard.writeText(mapOutput.value).then(() => alert('Map data copied!'));
-} 
+}
+
+// Initial timeline render
+generateTimeline();
