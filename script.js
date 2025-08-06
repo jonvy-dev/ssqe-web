@@ -6,16 +6,17 @@ const offsetInput = document.getElementById('offset');
 const audioIDInput = document.getElementById('audioID');
 
 const notes = [];
-let currentTime = 0; // ms, later we can link to audio position or manual time input
+let currentTime = 0; // TODO: link with playback timeline
 let dragNote = null;
 let offsetX = 0, offsetY = 0;
 
 const keyToGrid = {
-  'Q': [2, 2], 'W': [1, 2], 'E': [0, 2],
-  'A': [2, 1], 'S': [1, 1], 'D': [0, 1],
-  'Z': [2, 0], 'X': [1, 0], 'C': [0, 0]
+  'Q': [0, 0], 'W': [1, 0], 'E': [2, 0],
+  'A': [0, 1], 'S': [1, 1], 'D': [2, 1],
+  'Z': [0, 2], 'X': [1, 2], 'C': [2, 2]
 };
 
+const cellSize = 100 / 3;
 grid.style.position = 'relative';
 grid.innerHTML = '';
 for (let i = 0; i < 9; i++) {
@@ -28,7 +29,7 @@ grid.addEventListener('click', (e) => {
   if (quantumMode.checked) {
     const rect = grid.getBoundingClientRect();
     const x = ((e.clientX - rect.left) / rect.width) * 3;
-    const y = 3 - ((e.clientY - rect.top) / rect.height) * 3;
+    const y = ((e.clientY - rect.top) / rect.height) * 3;
     placeNote(x, y);
   }
 });
@@ -36,7 +37,9 @@ grid.addEventListener('click', (e) => {
 document.addEventListener('keydown', (e) => {
   const key = e.key.toUpperCase();
   if (!quantumMode.checked && keyToGrid[key]) {
-    const [x, y] = keyToGrid[key];
+    const [gridX, gridY] = keyToGrid[key];
+    const x = gridX;
+    const y = gridY;
     placeNote(x, y);
   }
 });
@@ -44,8 +47,8 @@ document.addEventListener('keydown', (e) => {
 function placeNote(x, y) {
   const note = document.createElement('div');
   note.classList.add('note');
-  note.style.left = `${(x / 3) * 100}%`;
-  note.style.top = `${(1 - y / 3) * 100}%`;
+  note.style.left = `${(x + 0.5) * cellSize}%`;
+  note.style.top = `${(y + 0.5) * cellSize}%`;
   note.dataset.x = x;
   note.dataset.y = y;
   note.dataset.ms = currentTime;
@@ -70,15 +73,15 @@ document.addEventListener('mousemove', (e) => {
   if (dragNote) {
     const rect = grid.getBoundingClientRect();
     let x = ((e.clientX - rect.left) / rect.width) * 3;
-    let y = 3 - ((e.clientY - rect.top) / rect.height) * 3;
+    let y = ((e.clientY - rect.top) / rect.height) * 3;
 
     if (!quantumMode.checked) {
       x = Math.round(x);
       y = Math.round(y);
     }
 
-    dragNote.style.left = `${(x / 3) * 100}%`;
-    dragNote.style.top = `${(1 - y / 3) * 100}%`;
+    dragNote.style.left = `${(x + 0.5) * cellSize}%`;
+    dragNote.style.top = `${(y + 0.5) * cellSize}%`;
     dragNote.dataset.x = x;
     dragNote.dataset.y = y;
     updateMapOutput();
@@ -103,4 +106,4 @@ function exportMap() {
 
 function copyMap() {
   navigator.clipboard.writeText(mapOutput.value).then(() => alert('Map data copied!'));
-}
+} 
